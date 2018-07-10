@@ -662,7 +662,7 @@ PlayerSettings:
   cloudServicesEnabled:
     UNet: 1
   facebookSdkVersion: 7.9.4
-  apiCompatibilityLevel: 2
+  apiCompatibilityLevel: 3
   cloudProjectId: 385b8294-cd1f-4e3e-9d80-2c2245ae5e35
   projectName: New Unity Project
   organizationId: ales--3

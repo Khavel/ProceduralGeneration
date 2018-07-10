@@ -7,6 +7,8 @@ using UnityEngine;
 
 public class DiamondSquare : MonoBehaviour {
 
+    public int nTiles = 1;
+    public Material material;
     public int nDivisions;
     public float mSize;
     public float maxHeight;
@@ -22,14 +24,29 @@ public class DiamondSquare : MonoBehaviour {
     float max = -float.MaxValue;
     float min = float.MaxValue;
 
+    List<GameObject> meshes; //This list contains all the tiles of the map as different gameobjects.
+    private Vector3[] megaArray; //This array will contain all the vertices from all the tiles, ordered sequentially.
+    private SortedDictionary<Nodo,int[]> sortedVertices;
 
-    // Use this for initialization
     void Start () {
+        sortedVertices = new SortedDictionary<Nodo, int[]>(new SortVector3());
+        megaArray = new Vector3[((nDivisions + 1) * (nDivisions + 1))*nTiles];
+        meshes = new List<GameObject>();
         v2SampleStart = new Vector2(Random.Range(0.0f, 100.0f), Random.Range(0.0f, 100.0f));
         createTerrain();
-        diamondSquare();
-        this.transform.position = new Vector3(0, 0, 0);
-        
+        Vector3 nextPosition = new Vector3(0, 0, 0);
+        for(int i = 0; i < meshes.Count; i++) {
+            diamondSquare(meshes[i].GetComponent<MeshFilter>().mesh);
+            meshes[i].transform.position = nextPosition;
+            if((i + 1)%(Mathf.Sqrt(nTiles)) == 0) {
+                nextPosition.x = 0;
+                nextPosition.z += mSize;
+            } else {
+                nextPosition.x += mSize;
+            }
+
+        }
+ 
 	}
 
     void Update() {
@@ -40,7 +57,7 @@ public class DiamondSquare : MonoBehaviour {
                 mVerts[i].y = Mathf.Lerp(noiseAux[i], mVerts[i].y,percent);
             }
             Mesh mesh = GetComponent<MeshFilter>().mesh;
-            diamondSquare();
+            diamondSquare(mesh);
             mesh.vertices = mVerts;
             mesh.RecalculateBounds();
             mesh.RecalculateNormals();
@@ -49,52 +66,60 @@ public class DiamondSquare : MonoBehaviour {
 
 
     private void createTerrain() {
-        vertCount = (nDivisions + 1) * (nDivisions + 1);
-        mVerts = new Vector3[vertCount];
-        Vector2[] uvs = new Vector2[vertCount];
-        int[] tris = new int[nDivisions * nDivisions * 6];
 
-        float halfTerrain = mSize * 0.5f;
-        float divisionSize = mSize / nDivisions;
+        for(int x = 0; x < nTiles; x++) {
+            GameObject obj = new GameObject();
+            obj.transform.SetParent(this.transform);
+            obj.AddComponent<MeshFilter>();
+            obj.AddComponent<MeshRenderer>();
+            obj.GetComponent<MeshRenderer>().material = material;
+            
+            vertCount = (nDivisions + 1) * (nDivisions + 1);
+            mVerts = new Vector3[vertCount];
+            Vector2[] uvs = new Vector2[vertCount];
+            int[] tris = new int[nDivisions * nDivisions * 6];
+            float halfTerrain = mSize * 0.5f;
+            float divisionSize = mSize / nDivisions;
 
-        Mesh mesh = new Mesh();
-        GetComponent<MeshFilter>().mesh = mesh;
+            Mesh mesh = new Mesh();
+            obj.GetComponent<MeshFilter>().mesh = mesh;
 
-        int triOffset = 0;
+            int triOffset = 0;
 
-        for(int i = 0; i <= nDivisions; i++) {
+            for(int i = 0; i <= nDivisions; i++) {
 
-            for(int j =0;j<= nDivisions; j++) {
-                mVerts[i * (nDivisions + 1) + j] = new Vector3(-halfTerrain + j * divisionSize, 0, halfTerrain - i * divisionSize);
-                uvs[i * (nDivisions + 1) + j] = new Vector2((float)i / nDivisions, (float)j / nDivisions);
+                for(int j =0;j<= nDivisions; j++) {
+                    mVerts[i * (nDivisions + 1) + j] = new Vector3(-halfTerrain + j * divisionSize, 0, halfTerrain - i * divisionSize);
+                    uvs[i * (nDivisions + 1) + j] = new Vector2((float)i / nDivisions, (float)j / nDivisions);
+                    sortedVertices.Add(new Nodo(mVerts[i * (nDivisions + 1) + j], x),new int[] {x,(i * (nDivisions + 1) + j) });
+                    if (i<nDivisions && j < nDivisions) {
+                        int topLeft = i * (nDivisions + 1) + j;
+                        int botLeft = (i+1) * (nDivisions + 1) + j;
 
-                if(i<nDivisions && j < nDivisions) {
-                    int topLeft = i * (nDivisions + 1) + j;
-                    int botLeft = (i+1) * (nDivisions + 1) + j;
+                        tris[triOffset] = topLeft;
+                        tris[triOffset + 1] = topLeft + 1;
+                        tris[triOffset + 2] = botLeft + 1;
 
-                    tris[triOffset] = topLeft;
-                    tris[triOffset + 1] = topLeft + 1;
-                    tris[triOffset + 2] = botLeft + 1;
+                        tris[triOffset + 3] = topLeft;
+                        tris[triOffset + 4] = botLeft + 1;
+                        tris[triOffset + 5] = botLeft;
 
-                    tris[triOffset + 3] = topLeft;
-                    tris[triOffset + 4] = botLeft + 1;
-                    tris[triOffset + 5] = botLeft;
-
-                    triOffset = triOffset + 6;
+                        triOffset = triOffset + 6;
+                    }
                 }
             }
+            mesh.vertices = mVerts;
+            mesh.uv = uvs;
+            mesh.triangles = tris;
+            mesh.RecalculateBounds();
+            mesh.RecalculateNormals();
+            meshes.Add(obj);
+
         }
-        mesh.vertices = mVerts;
-        mesh.uv = uvs;
-        mesh.triangles = tris;
-        mesh.RecalculateBounds();
-        mesh.RecalculateNormals();
     }
 
 
-    private void diamondSquare() {
-
-        Mesh mesh = GetComponent<MeshFilter>().mesh;
+    private void diamondSquare(Mesh mesh) {
 
         float mHeight = maxHeight;
         mVerts[0].y = Random.Range(-mHeight, mHeight);
@@ -173,5 +198,27 @@ public class DiamondSquare : MonoBehaviour {
             gain *= 2.0f;
         }
         return noiseMap;
+    }
+    
+}
+public class SortVector3 : IComparer<Nodo> {
+    public int Compare(Nodo x, Nodo y) {
+        if(x.position.z > y.position.z) {
+            return 1;
+        }
+        if(x.position.z < y.position.z) {
+            return -1;
+        }
+        if(x.position.z == y.position.z) {
+            if (x.position.x > y.position.x) {
+                return 1;
+            }
+            if (x.position.x < y.position.x) {
+                return -1;
+            }
+        }
+
+        return 0;
+
     }
 }
