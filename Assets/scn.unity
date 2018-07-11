@@ -455,7 +455,7 @@ Prefab:
     - target: {fileID: 114678994453090704, guid: 97eb55940e870be4c8028f6e7ca8b71d,
         type: 2}
       propertyPath: maxHeight
-      value: 5
+      value: 20
       objectReference: {fileID: 0}
     - target: {fileID: 114678994453090704, guid: 97eb55940e870be4c8028f6e7ca8b71d,
         type: 2}
@@ -465,12 +465,12 @@ Prefab:
     - target: {fileID: 114678994453090704, guid: 97eb55940e870be4c8028f6e7ca8b71d,
         type: 2}
       propertyPath: nDivisions
-      value: 128
+      value: 32
       objectReference: {fileID: 0}
     - target: {fileID: 114678994453090704, guid: 97eb55940e870be4c8028f6e7ca8b71d,
         type: 2}
       propertyPath: nTiles
-      value: 25
+      value: 4
       objectReference: {fileID: 0}
     - target: {fileID: 114678994453090704, guid: 97eb55940e870be4c8028f6e7ca8b71d,
         type: 2}

@@ -18,27 +18,28 @@ public class DiamondSquare : MonoBehaviour {
     public float percent = 0.5f;
     Vector2 v2SampleStart;
     public Gradient coloring;
-    Color[] colors;
-    private Vector3[] mVerts;
     int vertCount;
+    public int maxVerts = 16384;
     float max = -float.MaxValue;
     float min = float.MaxValue;
+    public Material mat;
 
-    List<GameObject> meshes; //This list contains all the tiles of the map as different gameobjects.
-    private Vector3[] megaArray; //This array will contain all the vertices from all the tiles, ordered sequentially.
-    private SortedDictionary<Nodo,int[]> sortedVertices;
 
     void Start () {
-        sortedVertices = new SortedDictionary<Nodo, int[]>(new SortVector3());
-        megaArray = new Vector3[((nDivisions + 1) * (nDivisions + 1))*nTiles];
-        meshes = new List<GameObject>();
-        v2SampleStart = new Vector2(Random.Range(0.0f, 100.0f), Random.Range(0.0f, 100.0f));
-        createTerrain();
+
+        GameObject[] tiles = new GameObject[nTiles];
         Vector3 nextPosition = new Vector3(0, 0, 0);
-        for(int i = 0; i < meshes.Count; i++) {
-            diamondSquare(meshes[i].GetComponent<MeshFilter>().mesh);
-            meshes[i].transform.position = nextPosition;
-            if((i + 1)%(Mathf.Sqrt(nTiles)) == 0) {
+        for (int i = 0; i < nTiles; i++) {
+            GameObject obj = new GameObject();
+            obj.transform.SetParent(this.transform);
+            obj.AddComponent<MeshFilter>();
+            obj.AddComponent<MeshRenderer>();
+            obj.GetComponent<MeshRenderer>().material = material;
+            Mesh mesh = new Mesh();
+            obj.GetComponent<MeshFilter>().mesh = mesh;
+            obj.transform.position = nextPosition;
+            tiles[i] = obj;
+        if ((i + 1)%(Mathf.Sqrt(nTiles)) == 0) {
                 nextPosition.x = 0;
                 nextPosition.z += mSize;
             } else {
@@ -46,80 +47,85 @@ public class DiamondSquare : MonoBehaviour {
             }
 
         }
- 
-	}
-
-    void Update() {
-        if (Input.GetKeyDown(KeyCode.Space)) {
-            
-            float[] noiseAux = MakeSomeNoise();
-            for (int i = 0; i < mVerts.Length; i++) {
-                mVerts[i].y = Mathf.Lerp(noiseAux[i], mVerts[i].y,percent);
-            }
-            Mesh mesh = GetComponent<MeshFilter>().mesh;
-            diamondSquare(mesh);
-            mesh.vertices = mVerts;
+        
+        for (int i = 0; i < tiles.Length; i++) {
+            Mesh mesh = tiles[i].GetComponent<MeshFilter>().mesh;
+            mesh.vertices = diamondSquare(createTile(nDivisions));
+            mesh.uv = calculateUvs(nDivisions);
+            mesh.triangles = calculateTriangles(nDivisions);
+            mesh.colors = calculateColors(mesh.vertices);
             mesh.RecalculateBounds();
             mesh.RecalculateNormals();
+            
         }
+        
     }
 
 
-    private void createTerrain() {
 
-        for(int x = 0; x < nTiles; x++) {
-            GameObject obj = new GameObject();
-            obj.transform.SetParent(this.transform);
-            obj.AddComponent<MeshFilter>();
-            obj.AddComponent<MeshRenderer>();
-            obj.GetComponent<MeshRenderer>().material = material;
-            
-            vertCount = (nDivisions + 1) * (nDivisions + 1);
-            mVerts = new Vector3[vertCount];
-            Vector2[] uvs = new Vector2[vertCount];
-            int[] tris = new int[nDivisions * nDivisions * 6];
-            float halfTerrain = mSize * 0.5f;
-            float divisionSize = mSize / nDivisions;
+    private Vector3[] createTile(int sideVerts) {
 
-            Mesh mesh = new Mesh();
-            obj.GetComponent<MeshFilter>().mesh = mesh;
+        vertCount = (sideVerts + 1) * (sideVerts + 1);
+        Vector3[] mVerts = new Vector3[vertCount];
+        Vector2[] uvs = new Vector2[vertCount];
+        float halfTerrain = mSize * 0.5f;
+        float divisionSize = mSize / sideVerts;
 
-            int triOffset = 0;
+        for (int i = 0; i <= sideVerts; i++) {
 
-            for(int i = 0; i <= nDivisions; i++) {
+            for (int j = 0; j <= sideVerts; j++) {
+                mVerts[i * (sideVerts + 1) + j] = new Vector3(-halfTerrain + j * divisionSize, 0, halfTerrain - i * divisionSize);
+                uvs[i * (sideVerts + 1) + j] = new Vector2((float)i / sideVerts, (float)j / sideVerts);
+            }
+        }
+        return mVerts;
 
-                for(int j =0;j<= nDivisions; j++) {
-                    mVerts[i * (nDivisions + 1) + j] = new Vector3(-halfTerrain + j * divisionSize, 0, halfTerrain - i * divisionSize);
-                    uvs[i * (nDivisions + 1) + j] = new Vector2((float)i / nDivisions, (float)j / nDivisions);
-                    sortedVertices.Add(new Nodo(mVerts[i * (nDivisions + 1) + j], x),new int[] {x,(i * (nDivisions + 1) + j) });
-                    if (i<nDivisions && j < nDivisions) {
-                        int topLeft = i * (nDivisions + 1) + j;
-                        int botLeft = (i+1) * (nDivisions + 1) + j;
+    }
 
-                        tris[triOffset] = topLeft;
-                        tris[triOffset + 1] = topLeft + 1;
-                        tris[triOffset + 2] = botLeft + 1;
+    private Vector2[] calculateUvs(int sideVerts) {
 
-                        tris[triOffset + 3] = topLeft;
-                        tris[triOffset + 4] = botLeft + 1;
-                        tris[triOffset + 5] = botLeft;
+        Vector2[] uvs = new Vector2[vertCount];
+        for (int i = 0; i <= sideVerts; i++) {
 
-                        triOffset = triOffset + 6;
-                    }
+            for (int j = 0; j <= sideVerts; j++) {
+               
+                uvs[i * (sideVerts + 1) + j] = new Vector2((float)i / sideVerts, (float)j / sideVerts);
+            }
+        }
+        return uvs;
+
+    }
+
+    private int[] calculateTriangles(int sideVerts) {
+
+        int triOffset = 0;
+        int[] tris = new int[sideVerts * sideVerts * 6];
+
+        for (int i = 0; i <= sideVerts; i++) {
+
+            for (int j = 0; j <= sideVerts; j++) {
+
+                if (i < sideVerts && j < sideVerts) {
+                    int topLeft = i * (sideVerts + 1) + j;
+                    int botLeft = (i + 1) * (sideVerts + 1) + j;
+
+                    tris[triOffset] = topLeft;
+                    tris[triOffset + 1] = topLeft + 1;
+                    tris[triOffset + 2] = botLeft + 1;
+
+                    tris[triOffset + 3] = topLeft;
+                    tris[triOffset + 4] = botLeft + 1;
+                    tris[triOffset + 5] = botLeft;
+
+                    triOffset = triOffset + 6;
                 }
             }
-            mesh.vertices = mVerts;
-            mesh.uv = uvs;
-            mesh.triangles = tris;
-            mesh.RecalculateBounds();
-            mesh.RecalculateNormals();
-            meshes.Add(obj);
-
         }
+        return tris;
     }
 
 
-    private void diamondSquare(Mesh mesh) {
+    private Vector3[] diamondSquare(Vector3[] mVerts) {
 
         float mHeight = maxHeight;
         mVerts[0].y = Random.Range(-mHeight, mHeight);
@@ -139,7 +145,7 @@ public class DiamondSquare : MonoBehaviour {
                 int col = 0;
                 for (int k = 0; k < nSquares; k++) {
 
-                    diamondSquareCalculation(row, col, squareSize, mHeight);
+                    mVerts = diamondSquareCalculation(row, col, squareSize, mHeight,mVerts);
                     col = col + squareSize;
                 }
                 row = row + squareSize;
@@ -157,31 +163,54 @@ public class DiamondSquare : MonoBehaviour {
                 min = mVerts[i].y;
             }
         }
-        colors = new Color[mVerts.Length];
-        for (int i = 0; i < mVerts.Length; i++) {
-            colors[i] = coloring.Evaluate((((mVerts[i].y - (min)) * (1 - 0)) / (max - min) + 0)+0.2f); 
-        }
+       
+        return mVerts;
 
-        mesh.vertices = mVerts;
-        mesh.colors = colors;
-        mesh.RecalculateBounds();
-        mesh.RecalculateNormals();
-        
+    }
+
+    private Color[] calculateColors(Vector3[] mVerts) {
+        Color[] colors = new Color[mVerts.Length];
+        for (int i = 0; i < mVerts.Length; i++) {
+            colors[i] = coloring.Evaluate((((mVerts[i].y - (min)) * (1 - 0)) / (max - min) + 0) + 0.2f);
+        }
+        return colors;
     }
 
 
-    private void diamondSquareCalculation(int row, int col, int size, float offset) {
+    private Vector3[] diamondSquareCalculation(int row, int col, int size, float offset, Vector3[] mVerts,TileNode node) {
         int halfSize = (int)(size * 0.5f);
         int topLeft = row * (nDivisions + 1) + col;
         int botLeft = (row + size)*(nDivisions+1)+col;
         int midpoint = (row + halfSize) * (nDivisions + 1) + (col + halfSize);
 
-        mVerts[midpoint].y = (mVerts[topLeft].y+mVerts[topLeft+size].y+mVerts[botLeft].y+mVerts[botLeft+size].y)*0.25f + Random.Range(-offset,offset);
 
-        mVerts[topLeft + halfSize].y = (mVerts[topLeft].y + mVerts[topLeft + size].y + mVerts[midpoint].y) / 3 + Random.Range(-offset,offset);
+        if(node.leftNeighbour != null) {
+            mVerts[midpoint].y = (node.topLeftVertex.y + mVerts[topLeft + size].y + node.botLeftVertex.y + mVerts[botLeft + size].y) * 0.25f + Random.Range(-offset, offset);
+            mVerts[topLeft + halfSize].y = (node.topLeftVertex.y + mVerts[topLeft + size].y + mVerts[midpoint].y) / 3 + Random.Range(-offset, offset);
+            mVerts[midpoint - halfSize].y = (node.topLeftVertex.y + mVerts[midpoint].y + node.botLeftVertex.y) / 3 + Random.Range(-offset, offset);
+            mVerts[botLeft + halfSize].y = (node.botLeftVertex.y + mVerts[midpoint].y + mVerts[botLeft + size].y) / 3 + Random.Range(-offset, offset);
+            mVerts[midpoint + halfSize].y = (mVerts[topLeft + size].y + mVerts[midpoint].y + mVerts[botLeft + size].y) / 3 + Random.Range(-offset, offset);
+        }
+        if(node.rightNeighbour != null) {
+            mVerts[midpoint].y = (mVerts[topLeft].y + node.topRightVertex.y + mVerts[botLeft].y + node.botRightVertex.y) * 0.25f + Random.Range(-offset, offset);
+            mVerts[topLeft + halfSize].y = (mVerts[topLeft].y + node.topRightVertex.y + mVerts[midpoint].y) / 3 + Random.Range(-offset, offset);
+            mVerts[midpoint - halfSize].y = (mVerts[topLeft].y + mVerts[midpoint].y + mVerts[botLeft].y) / 3 + Random.Range(-offset, offset);
+            mVerts[botLeft + halfSize].y = (mVerts[botLeft].y + mVerts[midpoint].y + node.botRightVertex.y) / 3 + Random.Range(-offset, offset);
+            mVerts[midpoint + halfSize].y = (node.topRightVertex.y + mVerts[midpoint].y + node.botRightVertex.y) / 3 + Random.Range(-offset, offset);
+        }
+        if(node.topNeighbour != null) {
+            mVerts[midpoint].y = (mVerts[topLeft].y + mVerts[topLeft + size].y + mVerts[botLeft].y + mVerts[botLeft + size].y) * 0.25f + Random.Range(-offset, offset);
+            mVerts[topLeft + halfSize].y = (mVerts[topLeft].y + mVerts[topLeft + size].y + mVerts[midpoint].y) / 3 + Random.Range(-offset, offset);
+            mVerts[midpoint - halfSize].y = (mVerts[topLeft].y + mVerts[midpoint].y + mVerts[botLeft].y) / 3 + Random.Range(-offset, offset);
+            mVerts[botLeft + halfSize].y = (mVerts[botLeft].y + mVerts[midpoint].y + mVerts[botLeft + size].y) / 3 + Random.Range(-offset, offset);
+            mVerts[midpoint + halfSize].y = (mVerts[topLeft + size].y + mVerts[midpoint].y + mVerts[botLeft + size].y) / 3 + Random.Range(-offset, offset);
+        }
+        mVerts[midpoint].y = (mVerts[topLeft].y + mVerts[topLeft + size].y + mVerts[botLeft].y + mVerts[botLeft + size].y) * 0.25f + Random.Range(-offset, offset);
+        mVerts[topLeft + halfSize].y = (mVerts[topLeft].y + mVerts[topLeft + size].y + mVerts[midpoint].y) / 3 + Random.Range(-offset, offset);
         mVerts[midpoint - halfSize].y = (mVerts[topLeft].y + mVerts[midpoint].y + mVerts[botLeft].y) / 3 + Random.Range(-offset, offset);
-        mVerts[botLeft + halfSize].y = (mVerts[botLeft].y + mVerts[midpoint].y + mVerts[botLeft+size].y) / 3 + Random.Range(-offset, offset);
-        mVerts[midpoint + halfSize].y = (mVerts[topLeft+size].y + mVerts[midpoint].y + mVerts[botLeft+size].y) / 3 + Random.Range(-offset, offset);
+        mVerts[botLeft + halfSize].y = (mVerts[botLeft].y + mVerts[midpoint].y + mVerts[botLeft + size].y) / 3 + Random.Range(-offset, offset);
+        mVerts[midpoint + halfSize].y = (mVerts[topLeft + size].y + mVerts[midpoint].y + mVerts[botLeft + size].y) / 3 + Random.Range(-offset, offset);
+        return mVerts;
 
     }
 
@@ -200,25 +229,5 @@ public class DiamondSquare : MonoBehaviour {
         return noiseMap;
     }
     
-}
-public class SortVector3 : IComparer<Nodo> {
-    public int Compare(Nodo x, Nodo y) {
-        if(x.position.z > y.position.z) {
-            return 1;
-        }
-        if(x.position.z < y.position.z) {
-            return -1;
-        }
-        if(x.position.z == y.position.z) {
-            if (x.position.x > y.position.x) {
-                return 1;
-            }
-            if (x.position.x < y.position.x) {
-                return -1;
-            }
-        }
 
-        return 0;
-
-    }
 }

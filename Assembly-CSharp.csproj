@@ -67,6 +67,7 @@
     <Compile Include="Assets\Nodo.cs" />
     <Compile Include="Assets\Planet.cs" />
     <Compile Include="Assets\Polygon.cs" />
+    <Compile Include="Assets\TileNode.cs" />
     <None Include="Assets\surfShader.shader" />
     <Reference Include="UnityEditor.StandardEvents">
       <HintPath>C:/Users/Khavel/Desktop/TFG/ProceduralGeneration/Library/ScriptAssemblies/UnityEditor.StandardEvents.dll</HintPath>
