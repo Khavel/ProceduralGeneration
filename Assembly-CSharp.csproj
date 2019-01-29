@@ -10,7 +10,7 @@
     <SchemaVersion>2.0</SchemaVersion>
     <RootNamespace>
     </RootNamespace>
-    <ProjectGuid>{2B33C5A4-0A62-34DC-BB63-15B7AC1B516C}</ProjectGuid>
+    <ProjectGuid>{B2B58FB2-4462-6B0C-A872-40DD957E5FE0}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <AssemblyName>Assembly-CSharp</AssemblyName>
@@ -61,19 +61,36 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Assets\CamRotation.cs" />
+    <Compile Include="Assets\CellularAutomata\Cell.cs" />
+    <Compile Include="Assets\CellularAutomata\CellularAutomata.cs" />
     <Compile Include="Assets\DiamondSquare.cs" />
+    <Compile Include="Assets\DiamondSquare2.cs" />
+    <Compile Include="Assets\ExampleScript.cs" />
+    <Compile Include="Assets\GenerateTerrain.cs" />
     <Compile Include="Assets\HouseGenerator.cs" />
     <Compile Include="Assets\makeSphere.cs" />
+    <Compile Include="Assets\MeshGen\MapDisplay.cs" />
+    <Compile Include="Assets\MeshGen\MeshGenerator.cs" />
+    <Compile Include="Assets\MeshGen\Perlin2.cs" />
+    <Compile Include="Assets\MeshGen\PerlinLayer.cs" />
+    <Compile Include="Assets\MeshGen\Voxel.cs" />
+    <Compile Include="Assets\NoiseMapGeneration.cs" />
+    <Compile Include="Assets\Perlin\Perlin.cs" />
+    <Compile Include="Assets\Perlin\Perlin_algo.cs" />
+    <Compile Include="Assets\PerlinMap.cs" />
+    <Compile Include="Assets\PerlinTerrain.cs" />
     <Compile Include="Assets\Planet.cs" />
     <Compile Include="Assets\Polygon.cs" />
+    <Compile Include="Assets\SmoothMouseLook.cs" />
     <Compile Include="Assets\TerrainGenerator.cs" />
     <Compile Include="Assets\VertexData.cs" />
     <None Include="Assets\surfShader.shader" />
     <Reference Include="UnityEditor.StandardEvents">
-      <HintPath>C:/Users/Khavel/Desktop/TFG/ProceduralGeneration/Library/ScriptAssemblies/UnityEditor.StandardEvents.dll</HintPath>
+      <HintPath>C:/Users/aot70/Desktop/TFG/New Unity Project/Library/ScriptAssemblies/UnityEditor.StandardEvents.dll</HintPath>
     </Reference>
     <Reference Include="Unity.PackageManagerUI.Editor">
-      <HintPath>C:/Users/Khavel/Desktop/TFG/ProceduralGeneration/Library/ScriptAssemblies/Unity.PackageManagerUI.Editor.dll</HintPath>
+      <HintPath>C:/Users/aot70/Desktop/TFG/New Unity Project/Library/ScriptAssemblies/Unity.PackageManagerUI.Editor.dll</HintPath>
     </Reference>
     <Reference Include="UnityEngine.AIModule">
       <HintPath>C:/Program Files/Unity/Hub/Editor/2018.1.7f1/Editor/Data/Managed/UnityEngine/UnityEngine.AIModule.dll</HintPath>
@@ -271,13 +288,13 @@
       <HintPath>C:/Program Files/Unity/Hub/Editor/2018.1.7f1/Editor/Data/UnityExtensions/Unity/UnitySpatialTracking/RuntimeEditor/UnityEngine.SpatialTracking.dll</HintPath>
     </Reference>
     <Reference Include="UnityEngine.Analytics">
-      <HintPath>C:/Users/Khavel/AppData/Local/Unity/cache/packages/packages.unity.com/com.unity.analytics@2.0.16/UnityEngine.Analytics.dll</HintPath>
+      <HintPath>C:/Users/aot70/AppData/Local/Unity/cache/packages/packages.unity.com/com.unity.analytics@2.0.16/UnityEngine.Analytics.dll</HintPath>
     </Reference>
     <Reference Include="UnityEngine.Purchasing">
-      <HintPath>C:/Users/Khavel/AppData/Local/Unity/cache/packages/packages.unity.com/com.unity.purchasing@2.0.1/UnityEngine.Purchasing.dll</HintPath>
+      <HintPath>C:/Users/aot70/AppData/Local/Unity/cache/packages/packages.unity.com/com.unity.purchasing@2.0.1/UnityEngine.Purchasing.dll</HintPath>
     </Reference>
     <Reference Include="UnityEngine.StandardEvents">
-      <HintPath>C:/Users/Khavel/AppData/Local/Unity/cache/packages/packages.unity.com/com.unity.standardevents@1.0.13/UnityEngine.StandardEvents.dll</HintPath>
+      <HintPath>C:/Users/aot70/AppData/Local/Unity/cache/packages/packages.unity.com/com.unity.standardevents@1.0.13/UnityEngine.StandardEvents.dll</HintPath>
     </Reference>
     <Reference Include="mscorlib">
       <HintPath>C:/Program Files/Unity/Hub/Editor/2018.1.7f1/Editor/Data/MonoBleedingEdge/lib/mono/unity/mscorlib.dll</HintPath>
@@ -306,6 +323,12 @@
     <Reference Include="Boo.Lang">
       <HintPath>C:/Program Files/Unity/Hub/Editor/2018.1.7f1/Editor/Data/MonoBleedingEdge/lib/mono/unity/Boo.Lang.dll</HintPath>
     </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="UnityMeshSimplifier.csproj">
+      <Project>{0FB0E6AA-E687-6F97-4123-2D90F98132EF}</Project>
+      <Name>UnityMeshSimplifier</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Target Name="GenerateTargetFrameworkMonikerAttribute" />

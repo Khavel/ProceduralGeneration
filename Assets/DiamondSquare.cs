@@ -1,5 +1,4 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEngine;
 
 [RequireComponent(typeof(MeshFilter))]
@@ -70,7 +69,7 @@ public class DiamondSquare : MonoBehaviour {
             Mesh mesh = tiles[i].GetComponent<MeshFilter>().mesh;
             mesh.SetVertices(listedVerts.GetRange(0, (nDivisions+1)* (nDivisions+1)));
             listedVerts.RemoveRange(0, (nDivisions + 1) * (nDivisions + 1));
-            mesh.uv = calculateUvs(nDivisions);
+            //mesh.uv = calculateUvs(nDivisions);
             mesh.triangles = calculateTriangles(nDivisions);
             mesh.colors = calculateColors(mesh.vertices);
             mesh.RecalculateBounds();
@@ -116,7 +115,7 @@ public class DiamondSquare : MonoBehaviour {
         return mVerts;
 
     }
-
+    /*
     private Vector2[] calculateUvs(int sideVerts) {
 
         Vector2[] uvs = new Vector2[vertCount];
@@ -130,7 +129,7 @@ public class DiamondSquare : MonoBehaviour {
         return uvs;
 
     }
-
+    */
     private int[] calculateTriangles(int sideVerts) {
 
         int triOffset = 0;
@@ -161,6 +160,7 @@ public class DiamondSquare : MonoBehaviour {
 
 
     private VertexData[] diamondSquare(VertexData[] mVerts) {
+
 
         int side = (int)Mathf.Sqrt(nTiles);
         float mHeight = maxHeight;
